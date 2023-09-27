@@ -1,19 +1,28 @@
 package com.pet.commerce.portal.filter.jwt;
 
 import com.pet.commerce.core.module.member.dto.MemberDto;
+import com.pet.commerce.core.module.user.dto.SysUserDto;
+import com.pet.commerce.core.module.user.model.SysRole;
+import com.pet.commerce.core.module.user.model.SysUserRSysRole;
 import com.pet.commerce.core.utils.WebThreadLocal;
 import com.pet.commerce.portal.module.member.dto.vo.MemberVO;
 import com.pet.commerce.portal.module.member.service.JwtUserDetailsService;
 import com.pet.commerce.portal.module.member.service.MemberService;
+import com.pet.commerce.portal.module.user.dto.vo.SysRoleDetailVO;
+import com.pet.commerce.portal.module.user.dto.vo.SysUserDetailVO;
+import com.pet.commerce.portal.module.user.service.SysUserService;
 import com.pet.commerce.portal.utils.JwtUtil;
 import com.pet.commerce.core.constants.Constants;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -22,7 +31,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -46,6 +57,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Lazy
     @Autowired
     private MemberService memberService;
+
+    @Lazy
+    @Autowired
+    private SysUserService sysUserService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
@@ -104,11 +119,30 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
                 // if token is valid configure Spring Security to manually set authentication
                 if (jwtUtil.validateToken(jwtToken, userDetails)) {
+                    List<GrantedAuthority> roleList = new ArrayList<>();
                     MemberVO memberVO = memberService.getMemberVOByAccount(userDetails.getUsername());
-                    MemberDto memberDto = new MemberDto();
-                    BeanUtils.copyProperties(memberVO, memberDto);
-                    memberDto.setUid(UUID.fromString(memberVO.getUid()));
-                    WebThreadLocal.setMember(memberDto);
+                    if (ObjectUtils.isNotEmpty(memberVO)) {
+                        MemberDto memberDto = new MemberDto();
+                        BeanUtils.copyProperties(memberVO, memberDto);
+                        memberDto.setUid(UUID.fromString(memberVO.getUid()));
+                        WebThreadLocal.setMember(memberDto);
+                    } else {
+                        SysUserDetailVO sysUserDetailVO = sysUserService.findByAccount(userDetails.getUsername());
+                        if (ObjectUtils.isNotEmpty(sysUserDetailVO)) {
+                            SysUserDto userDto = new SysUserDto();
+                            BeanUtils.copyProperties(sysUserDetailVO, userDto);
+                            userDto.setAccount(sysUserDetailVO.getAccount());
+                            userDto.setUid(UUID.fromString(sysUserDetailVO.getUid()));
+                            WebThreadLocal.setUser(userDto);
+                        }
+                        for (SysRoleDetailVO sysRoleDetailVO : sysUserDetailVO.getSysRoleList()) {
+                            roleList.add(new SimpleGrantedAuthority("ROLE_" + sysRoleDetailVO.getCode()));
+                        }
+                    }
+
+                    userDetails = new org.springframework.security.core.userdetails.User(userDetails.getUsername(), userDetails.getPassword(),
+                            roleList);
+
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     usernamePasswordAuthenticationToken

@@ -19,7 +19,6 @@ CREATE TABLE "sys_user"
     "account"       varchar(100)                                NOT NULL,
     "avatar"        varchar(100),
     "password"      varchar(100)                                NOT NULL,
-    "role_id"       bigint,
     "ad_code"       varchar(255) COLLATE "pg_catalog"."default",
     longitude       DECIMAL(16, 4),
     latitude        DECIMAL(16, 4),
@@ -44,6 +43,7 @@ CREATE TABLE "sys_role"
     "deleted_time" timestamptz(6),
     "deleted_by"   varchar(100) COLLATE "pg_catalog"."default",
     "code"         varchar(100)                                NOT NULL,
+    "name"         varchar(100)                                NOT NULL,
     "description"  varchar(200),
     "status"       bool,
     CONSTRAINT "uq_sys_role_code" UNIQUE ("code")

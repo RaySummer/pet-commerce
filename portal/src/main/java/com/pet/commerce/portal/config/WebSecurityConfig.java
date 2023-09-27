@@ -54,6 +54,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/member/register", "/member/quickly-register").permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/blog/page").permitAll()
+                .antMatchers("/backstage/**").hasAnyRole("SYSADMIN", "ADMIN", "FINANCE", "PROCURER", "CUSTOMER")
                 .antMatchers(
                         "/about", "/login/**", "/login", "/error",                                 //排除不需spring security验证的页面
                         "/js/**", "/css/**", "/jQuery/**", "/images/**", "/icon/**", "/file/**").permitAll()    //解决静态资源被拦截的问题(新，写在这里)

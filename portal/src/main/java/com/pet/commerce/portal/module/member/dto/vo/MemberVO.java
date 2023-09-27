@@ -3,6 +3,7 @@ package com.pet.commerce.portal.module.member.dto.vo;
 import com.pet.commerce.core.module.member.model.Member;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
@@ -37,6 +38,9 @@ public class MemberVO implements Serializable {
     private String address;
 
     public static MemberVO of(Member member) {
+        if (ObjectUtils.isEmpty(member)) {
+            return null;
+        }
         MemberVO vo = new MemberVO();
         BeanUtils.copyProperties(member, vo);
         vo.setUid(member.getUidStr());

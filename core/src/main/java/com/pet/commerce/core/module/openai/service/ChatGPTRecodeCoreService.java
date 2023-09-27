@@ -16,6 +16,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@Transactional
 public class ChatGPTRecodeCoreService extends BaseCrudServiceImpl<ChatGPTRecodeRepository, ChatGPTRecode, Long> {
 
     public List<ChatGPTRecode> findRecode(Member member) {

@@ -1,6 +1,7 @@
 package com.pet.commerce.portal.module.member.controller;
 
 import com.pet.commerce.core.annotation.NoRepeatSubmit;
+import com.pet.commerce.core.exception.BusinessException;
 import com.pet.commerce.core.module.member.dto.MemberDto;
 import com.pet.commerce.core.utils.Response;
 import com.pet.commerce.core.utils.WebThreadLocal;
@@ -53,9 +54,9 @@ public class MemberController {
         try {
             memberTaskRecodeService.completeTask(WebThreadLocal.getMember().getUidStr(), taskUid);
             return Response.of();
-        } catch (Exception e) {
+        } catch (BusinessException e) {
             e.printStackTrace();
-            return Response.ofError(500, e.getMessage());
+            return Response.ofError(500, e.getArgs()[0]);
         }
     }
 }

@@ -5,6 +5,7 @@ import com.pet.commerce.core.module.openai.model.GPTSpeechTextRecode;
 import com.pet.commerce.core.module.openai.repository.GPTSpeechTextRecodeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Ray
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
+@Transactional
 public class GPTSpeechTextRecodeCoreService extends BaseCrudServiceImpl<GPTSpeechTextRecodeRepository, GPTSpeechTextRecode, Long> {
 
     public GPTSpeechTextRecode findRecode(String key, long memberId) {

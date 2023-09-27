@@ -6,8 +6,11 @@ import com.pet.commerce.core.utils.Response;
 import com.pet.commerce.portal.module.member.dto.ro.JwtRequestRO;
 import com.pet.commerce.portal.module.member.dto.ro.MobileNumberJwtRequestRO;
 import com.pet.commerce.portal.module.member.dto.vo.JwtResponseVO;
+import com.pet.commerce.portal.module.member.service.AuthenticateService;
 import com.pet.commerce.portal.module.member.service.JwtUserDetailsService;
 import com.pet.commerce.portal.module.member.service.MemberService;
+import com.pet.commerce.portal.module.user.dto.vo.SysUserDetailVO;
+import com.pet.commerce.portal.module.user.service.SysUserService;
 import com.pet.commerce.portal.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +28,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Ray
@@ -51,70 +54,62 @@ public class AuthenticateController {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private AuthenticateService authenticateService;
+
 
     @PostMapping("/authenticate")
     public Response authenticateJWT(@RequestBody JwtRequestRO jwtRequestRO) {
-        String userName = jwtRequestRO.getUsername();
-        boolean isInvalidCredential = false;
         try {
-            Authentication auth = authenticate(jwtRequestRO.getUsername(), jwtRequestRO.getPassword());
-        } catch (CustomizeException customizeException) {
-            isInvalidCredential = true;
-        }
-        if (isInvalidCredential) {
-            String jwtToken = jwtRequestRO.getPassword();
-            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(userName);
-            try {
-                if (!isValidToken(jwtToken, userDetails)) {
-                    return Response.ofError("INVALID_CREDENTIALS");
-                }
-            } catch (Exception exception) {
-                log.error(exception.getMessage());
-                return Response.ofError(exception.getMessage());
+            String userName = jwtRequestRO.getUsername();
+            String password = jwtRequestRO.getPassword();
+
+            Authentication auth = authenticate(userName, password);
+
+            UserDetails userDetails = authenticateService.findUserByJwt(userName, password);
+
+            final String token = jwtUtil.generateToken(auth.getName());
+
+            final String refreshToken = jwtUtil.doGenerateRefreshToken(new HashMap<>(), auth.getName());
+
+
+            if (!isValidToken(token, userDetails)) {
+                return Response.ofError("INVALID_CREDENTIALS");
             }
+            return Response.of(new JwtResponseVO(token, refreshToken, new Date()));
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            return Response.ofError(exception.getMessage());
         }
-
-        final String token = jwtUtil.generateToken(userName);
-
-        final String refreshToken = jwtUtil.doGenerateRefreshToken(new HashMap<>(), userName);
-
-        return Response.of(new JwtResponseVO(token, refreshToken, new Date()));
     }
 
     @PostMapping("/authenticate-mobile")
     public Response authenticateByMobileNumber(@RequestBody MobileNumberJwtRequestRO jwtRequestRO) {
-        String userName = jwtRequestRO.getUsername();
-
-        Member member = memberService.findMemberByAccount(userName);
-
-        if (member == null) {
-            member = memberService.register(userName);
-        }
-
-        boolean isInvalidCredential = false;
         try {
-            Authentication auth = authenticate(member.getAccount(), userName.substring(userName.length() - 5));
-        } catch (CustomizeException customizeException) {
-            isInvalidCredential = true;
-        }
-        if (isInvalidCredential) {
-            String jwtToken = member.getPassword();
-            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(userName);
-            try {
-                if (!isValidToken(jwtToken, userDetails)) {
-                    return Response.ofError("INVALID_CREDENTIALS");
-                }
-            } catch (Exception exception) {
-                log.error(exception.getMessage());
-                return Response.ofError(exception.getMessage());
+            String userName = jwtRequestRO.getUsername();
+            Member member = memberService.findMemberByAccount(userName);
+
+            if (member == null) {
+                member = memberService.register(userName);
             }
+
+            Authentication auth = authenticate(member.getAccount(), userName.substring(userName.length() - 5));
+
+            UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(auth.getName());
+
+            final String token = jwtUtil.generateToken(auth.getName());
+
+            final String refreshToken = jwtUtil.doGenerateRefreshToken(new HashMap<>(), auth.getName());
+
+
+            if (!isValidToken(token, userDetails)) {
+                return Response.ofError("INVALID_CREDENTIALS");
+            }
+            return Response.of(new JwtResponseVO(token, refreshToken, new Date()));
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            return Response.ofError(exception.getMessage());
         }
-
-        final String token = jwtUtil.generateToken(userName);
-
-        final String refreshToken = jwtUtil.doGenerateRefreshToken(new HashMap<>(), userName);
-
-        return Response.of(new JwtResponseVO(token, refreshToken, new Date()));
     }
 
     private Authentication authenticate(String username, String password) {

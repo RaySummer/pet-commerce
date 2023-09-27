@@ -1,18 +1,12 @@
 package com.pet.commerce.portal.module.blog.controller;
 
-import com.pet.commerce.core.module.base.dto.WebThreadLocalDto;
-import com.pet.commerce.core.module.base.vo.CreateVO;
-import com.pet.commerce.core.module.base.vo.DeleteVO;
 import com.pet.commerce.core.module.base.vo.PageVO;
-import com.pet.commerce.core.module.base.vo.Result;
-import com.pet.commerce.core.module.base.vo.UpdateVO;
-import com.pet.commerce.core.module.member.dto.MemberDto;
-import com.pet.commerce.core.utils.WebThreadLocal;
+import com.pet.commerce.core.utils.CustomizeException;
+import com.pet.commerce.core.utils.Response;
 import com.pet.commerce.portal.module.blog.dto.ro.BlogCreateRO;
 import com.pet.commerce.portal.module.blog.dto.ro.BlogSearchPageRO;
 import com.pet.commerce.portal.module.blog.dto.ro.BlogUpdateRO;
 import com.pet.commerce.portal.module.blog.dto.ro.CollectOrLikeBlogSearchPageRO;
-import com.pet.commerce.portal.module.blog.dto.vo.BlogGetVO;
 import com.pet.commerce.portal.module.blog.dto.vo.BlogSearchPageVO;
 import com.pet.commerce.portal.module.blog.service.BlogService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,66 +40,87 @@ public class BlogController {
     }
 
     @GetMapping("/{uid}")
-    public BlogGetVO blogDetail(@PathVariable String uid) {
-        return blogService.findBlogByUid(uid);
+    public Response blogDetail(@PathVariable String uid) {
+        try {
+            return Response.of(blogService.findBlogByUid(uid));
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.ofError(500, e.getMsg());
+        }
     }
 
     @PostMapping("/create")
-    public CreateVO createBlog(@RequestBody BlogCreateRO ro) {
-        return blogService.createBlog(ro);
+    public Response createBlog(@RequestBody BlogCreateRO ro) {
+        try {
+            return Response.of(blogService.createBlog(ro));
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.ofError(500, e.getMsg());
+        }
     }
 
     @PutMapping("/modify/{uid}")
-    public UpdateVO modifyBlog(@RequestBody BlogUpdateRO ro, @PathVariable String uid) {
-        return blogService.modifyBlog(ro, uid);
+    public Response modifyBlog(@RequestBody BlogUpdateRO ro, @PathVariable String uid) {
+        try {
+            return Response.of(blogService.modifyBlog(ro, uid));
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.ofError(500, e.getMsg());
+        }
     }
 
     @DeleteMapping("/del/{uid}")
-    public DeleteVO delBlog(@PathVariable String uid) {
-        return blogService.delBlog(uid);
+    public Response delBlog(@PathVariable String uid) {
+        try {
+            blogService.delBlog(uid);
+            return Response.of("删除成功");
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.ofError(500, e.getMsg());
+        }
     }
 
     @PostMapping("/like/{uid}")
-    public Result likeBlog(@PathVariable String uid) {
+    public Response likeBlog(@PathVariable String uid) {
         try {
             blogService.likeOrUnlikeBlog(uid, "like");
-            return Result.ok("点赞帖子成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.fail("点赞帖子失败");
+            return Response.of("点赞帖子成功");
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.of("点赞帖子失败");
         }
     }
 
     @PostMapping("/unlike/{uid}")
-    public Result unlikeBlog(@PathVariable String uid) {
+    public Response unlikeBlog(@PathVariable String uid) {
         try {
             blogService.likeOrUnlikeBlog(uid, "unlike");
-            return Result.ok("踩帖子成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.fail("踩帖子失败");
+            return Response.of("踩帖子成功");
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.of("踩帖子失败");
         }
     }
 
     @PostMapping("/collect/{uid}")
-    public Result collectBlog(@PathVariable String uid) {
+    public Response collectBlog(@PathVariable String uid) {
         try {
             blogService.collectBlog(uid);
-            return Result.ok("收藏成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.fail("收藏失败");
+            return Response.of("收藏成功");
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.of("收藏失败");
         }
     }
 
     @PostMapping("/un-collect/{uid}")
-    public Result unCollectBlog(@PathVariable String uid) {
+    public Response unCollectBlog(@PathVariable String uid) {
         try {
             blogService.unCollectBlog(uid);
-            return Result.ok("取消收藏成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.fail("取消收藏失败");
+            return Response.of("取消收藏成功");
+        } catch (CustomizeException e) {
+            log.error(e.getMsg());
+            return Response.of("取消收藏失败");
         }
     }
 

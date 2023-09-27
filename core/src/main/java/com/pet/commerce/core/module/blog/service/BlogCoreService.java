@@ -1,11 +1,7 @@
 package com.pet.commerce.core.module.blog.service;
 
-import com.pet.commerce.core.exception.BusinessException;
 import com.pet.commerce.core.module.base.service.impl.BaseCrudServiceImpl;
-import com.pet.commerce.core.module.base.vo.CreateVO;
-import com.pet.commerce.core.module.base.vo.DeleteVO;
 import com.pet.commerce.core.module.base.vo.PageVO;
-import com.pet.commerce.core.module.base.vo.UpdateVO;
 import com.pet.commerce.core.module.blog.dto.BlogCreateDto;
 import com.pet.commerce.core.module.blog.dto.BlogDetailDto;
 import com.pet.commerce.core.module.blog.dto.BlogSearchPageParamDto;
@@ -23,6 +19,7 @@ import com.pet.commerce.core.module.member.model.Member;
 import com.pet.commerce.core.module.member.service.MemberCoreService;
 import com.pet.commerce.core.module.member.service.MemberLikeBlogCoreService;
 import com.pet.commerce.core.module.member.service.MemberReadHistoryBlogCoreService;
+import com.pet.commerce.core.utils.CustomizeException;
 import com.pet.commerce.core.utils.LockHelper;
 import com.pet.commerce.core.utils.WebThreadLocal;
 import com.querydsl.core.BooleanBuilder;
@@ -81,7 +78,7 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
     private MemberReadHistoryBlogCoreService memberReadHistoryBlogCoreService;
 
     @Transactional
-    public CreateVO createBlog(BlogCreateDto dto) {
+    public Blog createBlog(BlogCreateDto dto) {
         //先保存基本数据
         Blog blog = new Blog();
         blog.setTitle(dto.getTitle());
@@ -102,7 +99,7 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
             member = memberCoreService.findPlatformMember(PLATFORM_ACCOUNT, PLATFORM_ACCOUNT_MOBILE_NUMBER);
         }
         if (member == null) {
-            throw new BusinessException("Filed! Cannot found member!!!");
+            throw new CustomizeException("Filed! Cannot found member!!!");
         }
         blog.setMember(member);
         blog.setAuthor(member.getNickName());
@@ -146,7 +143,7 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
 //            create(blog);
 //        }
 
-        return CreateVO.of(blog);
+        return blog;
     }
 
     public PageVO<BlogSearchPageResultDto> searchBlog(BlogSearchPageParamDto blogSearchPageParamDto) {
@@ -220,7 +217,7 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
         return PageVO.convert(blogPage, voContent);
     }
 
-    public UpdateVO updateBlog(String blogUid, BlogUpdateDto dto) {
+    public Blog updateBlog(String blogUid, BlogUpdateDto dto) {
         Blog blog = judgeThisBlogExists(blogUid);
 
         BlogUpdateDto.convertRoToEntity(dto, blog);
@@ -266,7 +263,7 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
             update(blog);
         }
 
-        return UpdateVO.of(blog);
+        return blog;
     }
 
     public BlogDetailDto getBlog(String blogUid) {
@@ -274,9 +271,9 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
         return BlogDetailDto.of(blog);
     }
 
-    public DeleteVO deleteBlog(String blogUid) {
+    public void deleteBlog(String blogUid) {
         Blog blog = judgeThisBlogExists(blogUid);
-        return DeleteVO.of(delete(blog));
+        delete(blog);
     }
 
     @Async
@@ -305,7 +302,7 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
                     blog.setCommentCount(commentCount + 1);
                     break;
                 default:
-                    throw new BusinessException("没有该类型的数值累加");
+                    throw new CustomizeException("没有该类型的数值累加");
             }
             update(blog);
         } finally {
@@ -315,11 +312,11 @@ public class BlogCoreService extends BaseCrudServiceImpl<BlogRepository, Blog, L
 
     public Blog judgeThisBlogExists(String uid) {
         if (StringUtils.isBlank(uid)) {
-            throw new BusinessException("UUID is null");
+            throw new CustomizeException("UUID is null");
         }
         Blog blog = findByUid(uid);
         if (ObjectUtils.isEmpty(blog)) {
-            throw new BusinessException("Cannot found blog by the uid");
+            throw new CustomizeException("Cannot found blog by the uid");
         }
         return blog;
     }

@@ -9,4 +9,6 @@ import com.pet.commerce.core.module.user.model.SysUser;
  */
 public interface SysUserRepository extends BaseRepository<SysUser, Long> {
 
+    SysUser findByAccountAndDeletedByIsNull(String account);
+
 }

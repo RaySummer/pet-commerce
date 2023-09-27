@@ -1,12 +1,10 @@
 package com.pet.commerce.portal.module.upload.controller;
 
-import com.pet.commerce.core.exception.BusinessException;
-import com.pet.commerce.core.module.base.vo.CreateVO;
 import com.pet.commerce.core.module.media.dto.MediaDto;
 import com.pet.commerce.core.module.media.service.MediaCoreService;
+import com.pet.commerce.core.utils.CustomizeException;
 import com.pet.commerce.core.utils.Response;
 import com.pet.commerce.portal.module.upload.ro.UploadRo;
-import com.pet.commerce.portal.module.upload.vo.UploadVo;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,7 +54,7 @@ public class UploadFileController {
         List<MultipartFile> multipartFileList = ro.getMultipartFileList();
 
         if (CollectionUtils.isEmpty(multipartFileList)) {
-            throw new BusinessException("上传失败! 没有文件");
+            throw new CustomizeException("上传失败! 没有文件");
         }
         List<MediaDto> dtoList = new ArrayList<>();
         List<String> imageLinks = new ArrayList<>();
@@ -100,7 +97,7 @@ public class UploadFileController {
                 imageLinks.add(originalName);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new BusinessException("上传失败!");
+                throw new CustomizeException("上传失败!");
             }
         }
         mediaCoreService.saveMedias(dtoList);

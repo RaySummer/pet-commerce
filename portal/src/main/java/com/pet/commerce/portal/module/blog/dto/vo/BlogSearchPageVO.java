@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,7 +49,7 @@ public class BlogSearchPageVO extends BaseAuditVO {
 
     private Integer commentCount = 0;
 
-    private List<BlogCategory> categories;
+    private List<BlogCategory> categories = new ArrayList<>();
 
 //    private List<BlogTag> blogTagList;
 

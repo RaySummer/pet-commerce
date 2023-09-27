@@ -1,12 +1,7 @@
 package com.pet.commerce.portal.module.blog.service;
 
-import com.pet.commerce.core.exception.BusinessException;
-import com.pet.commerce.core.module.base.vo.CreateVO;
-import com.pet.commerce.core.module.base.vo.DeleteVO;
 import com.pet.commerce.core.module.base.vo.PageVO;
-import com.pet.commerce.core.module.base.vo.UpdateVO;
 import com.pet.commerce.core.module.blog.dto.BlogCreateDto;
-import com.pet.commerce.core.module.blog.dto.BlogSearchPageResultDto;
 import com.pet.commerce.core.module.blog.dto.BlogUpdateDto;
 import com.pet.commerce.core.module.blog.enums.BlogAddCountTypeEnum;
 import com.pet.commerce.core.module.blog.model.Blog;
@@ -21,6 +16,7 @@ import com.pet.commerce.core.module.member.model.MemberReadHistoryBlog;
 import com.pet.commerce.core.module.member.service.MemberCollectBlogCoreService;
 import com.pet.commerce.core.module.member.service.MemberLikeBlogCoreService;
 import com.pet.commerce.core.module.member.service.MemberReadHistoryBlogCoreService;
+import com.pet.commerce.core.utils.CustomizeException;
 import com.pet.commerce.core.utils.WebThreadLocal;
 import com.pet.commerce.portal.module.blog.dto.ro.BlogCreateRO;
 import com.pet.commerce.portal.module.blog.dto.ro.BlogSearchPageRO;
@@ -243,7 +239,7 @@ public class BlogService {
     }
 
     @Transactional
-    public CreateVO createBlog(BlogCreateRO ro) {
+    public BlogCreateDto createBlog(BlogCreateRO ro) {
         BlogCreateDto dto = new BlogCreateDto();
         dto.setTitle(ro.getTitle());
         dto.setContent(ro.getContent());
@@ -260,14 +256,14 @@ public class BlogService {
         if (!CollectionUtils.isEmpty(ro.getMedias())) {
             dto.getMedias().addAll(ro.getMedias());
         }
-
-        return blogCoreService.createBlog(dto);
+        blogCoreService.createBlog(dto);
+        return dto;
     }
 
     @Transactional
-    public UpdateVO modifyBlog(BlogUpdateRO ro, String uid) {
+    public BlogUpdateDto modifyBlog(BlogUpdateRO ro, String uid) {
         if (StringUtils.isBlank(uid)) {
-            throw new BusinessException("UUID is null");
+            throw new CustomizeException("UUID is null");
         }
 
         BlogUpdateDto dto = new BlogUpdateDto();
@@ -283,13 +279,13 @@ public class BlogService {
         dto.getCategories().addAll(ro.getCategories());
 //        dto.getTags().addAll(ro.getTags());
         dto.getMediaLinks().addAll(ro.getMediaLinks());
-
-        return blogCoreService.updateBlog(uid, dto);
+        blogCoreService.updateBlog(uid, dto);
+        return dto;
     }
 
     @Transactional
-    public DeleteVO delBlog(String uid) {
-        return blogCoreService.deleteBlog(uid);
+    public void delBlog(String uid) {
+        blogCoreService.deleteBlog(uid);
     }
 
     public void likeOrUnlikeBlog(String uid, String type) {

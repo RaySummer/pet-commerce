@@ -9,5 +9,5 @@ import com.pet.commerce.core.module.member.model.Member;
  */
 public interface MemberRepository extends BaseRepository<Member, Long> {
 
-    Member findByAccount(String account);
+    Member findByAccountAndDeletedByIsNull(String account);
 }

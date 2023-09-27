@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping({"/configuration"})
+@RequestMapping({"/backstage/configuration"})
 public class ConfigurationController {
 
     @Autowired

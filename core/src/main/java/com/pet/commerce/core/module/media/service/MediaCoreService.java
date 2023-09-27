@@ -1,8 +1,6 @@
 package com.pet.commerce.core.module.media.service;
 
-import com.pet.commerce.core.exception.BusinessException;
 import com.pet.commerce.core.module.base.service.impl.BaseCrudServiceImpl;
-import com.pet.commerce.core.module.base.vo.CreateVO;
 import com.pet.commerce.core.module.blog.model.Blog;
 import com.pet.commerce.core.module.blog.repository.BlogRepository;
 import com.pet.commerce.core.module.media.dto.MediaDto;
@@ -14,6 +12,7 @@ import com.pet.commerce.core.module.member.model.Member;
 import com.pet.commerce.core.module.member.repository.MemberRepository;
 import com.pet.commerce.core.module.user.model.SysUser;
 import com.pet.commerce.core.module.user.repository.SysUserRepository;
+import com.pet.commerce.core.utils.CustomizeException;
 import com.querydsl.core.BooleanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -51,7 +50,7 @@ public class MediaCoreService extends BaseCrudServiceImpl<MediaRepository, Media
     @Async
     public List<Media> saveMedias(List<MediaDto> mediaDtoList) {
         if (CollectionUtils.isEmpty(mediaDtoList)) {
-            throw new BusinessException("保存失败, 没有数据");
+            throw new CustomizeException("保存失败, 没有数据");
         }
         List<Media> medias = new ArrayList<>();
         for (MediaDto dto : mediaDtoList) {
@@ -64,7 +63,7 @@ public class MediaCoreService extends BaseCrudServiceImpl<MediaRepository, Media
             medias.add(media);
         }
         if (CollectionUtils.isEmpty(medias)) {
-            throw new BusinessException("保存失败, 没有数据");
+            throw new CustomizeException("保存失败, 没有数据");
         }
         return save(medias);
     }
@@ -72,7 +71,7 @@ public class MediaCoreService extends BaseCrudServiceImpl<MediaRepository, Media
     @Async
     public void updateMedias(List<String> mediaLinks, MediaUpdateDto dto) {
         if (CollectionUtils.isEmpty(mediaLinks)) {
-            throw new BusinessException("没有数据");
+            throw new CustomizeException("没有数据");
         }
         for (String link : mediaLinks) {
             Media media = findByLink(link);

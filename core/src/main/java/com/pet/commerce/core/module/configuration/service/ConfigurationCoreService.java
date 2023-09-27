@@ -5,6 +5,7 @@ import com.pet.commerce.core.module.configuration.model.Configuration;
 import com.pet.commerce.core.module.configuration.repository.ConfigurationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@Transactional
 public class ConfigurationCoreService extends BaseCrudServiceImpl<ConfigurationRepository, Configuration, Long> {
 
     public List<Configuration> findAllByPlatform(String platform) {
